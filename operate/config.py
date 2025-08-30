@@ -92,7 +92,7 @@ class Config:
         client.base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
         return client
 
-    def initialize_google(self):
+    def initialize_google(self, model_name="gemini-pro-vision"):
         if self.google_api_key:
             if self.verbose:
                 print("[Config][initialize_google] using cached google_api_key")
@@ -104,7 +104,7 @@ class Config:
                 )
             api_key = os.getenv("GOOGLE_API_KEY")
         genai.configure(api_key=api_key, transport="rest")
-        model = genai.GenerativeModel("gemini-pro-vision")
+        model = genai.GenerativeModel(model_name)
 
         return model
 
@@ -144,7 +144,7 @@ class Config:
             or model == "gpt-5",
         )
         self.require_api_key(
-            "GOOGLE_API_KEY", "Google API key", model == "gemini-pro-vision"
+            "GOOGLE_API_KEY", "Google API key", model == "gemini-pro-vision" or model == "gemini-flash"
         )
         self.require_api_key(
             "ANTHROPIC_API_KEY", "Anthropic API key", model == "claude-3" or model == "claude-4"

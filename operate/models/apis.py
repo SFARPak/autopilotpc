@@ -58,6 +58,8 @@ async def get_next_action(model, messages, objective, session_id):
         return "coming soon"
     if model == "gemini-pro-vision":
         return call_gemini_pro_vision(messages, objective), None
+    if model == "gemini-flash":
+        return call_gemini_flash(messages, objective), None
     if model == "llava":
         operation = call_ollama_llava(messages, "llava")
         return operation, None
@@ -395,7 +397,61 @@ def call_gemini_pro_vision(messages, objective):
         if config.verbose:
             print("[Self-Operating Computer][Operate] error", e)
             traceback.print_exc()
-        return call_gpt_4o(messages)
+        print(f"{ANSI_RED}[Self-Operating Computer][Error] Gemini Pro Vision failed. No fallback to OpenAI. Exception: {e}{ANSI_RESET}")
+        return []
+
+
+def call_gemini_flash(messages, objective):
+    """
+    Get the next action for Self-Operating Computer using Gemini Flash
+    """
+    if config.verbose:
+        print(
+            "[Self Operating Computer][call_gemini_flash]",
+        )
+    # sleep for a second
+    time.sleep(1)
+    try:
+        screenshots_dir = "screenshots"
+        if not os.path.exists(screenshots_dir):
+            os.makedirs(screenshots_dir)
+
+        screenshot_filename = os.path.join(screenshots_dir, "screenshot.png")
+        # Call the function to capture the screen with the cursor
+        capture_screen_with_cursor(screenshot_filename)
+        # sleep for a second
+        time.sleep(1)
+        prompt = get_system_prompt("gemini-flash", objective)
+
+        model = config.initialize_google("gemini-flash")
+        if config.verbose:
+            print("[call_gemini_flash] model", model)
+
+        response = model.generate_content([prompt, Image.open(screenshot_filename)])
+
+        content = response.text[1:]
+        if config.verbose:
+            print("[call_gemini_flash] response", response)
+            print("[call_gemini_flash] content", content)
+
+        content = json.loads(content)
+        if config.verbose:
+            print(
+                "[get_next_action][call_gemini_flash] content",
+                content,
+            )
+
+        return content
+
+    except Exception as e:
+        print(
+            f"{ANSI_GREEN}[Self-Operating Computer]{ANSI_BRIGHT_MAGENTA}[Operate] That did not work. Trying another method {ANSI_RESET}"
+        )
+        if config.verbose:
+            print("[Self-Operating Computer][Operate] error", e)
+            traceback.print_exc()
+        print(f"{ANSI_RED}[Self-Operating Computer][Error] Gemini Flash failed. No fallback to OpenAI. Exception: {e}{ANSI_RESET}")
+        return []
 
 
 async def call_gpt_4o_with_ocr(messages, objective, model):

@@ -241,7 +241,7 @@ def get_system_prompt(model, objective):
             operating_system=operating_system,
         )
 
-    elif model == "gpt-5":
+    elif model == "gpt-5" or model == "gemini-flash":
         prompt = SYSTEM_PROMPT_STANDARD.format(
             objective=objective,
             cmd_string=cmd_string,
